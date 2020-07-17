@@ -24,7 +24,6 @@
 #include "adl-bmc.h"
 
 
-
 struct adl_bmc_hwmon_data {
 	struct device *hwmon_dev;
 	struct adl_bmc_dev *adl_dev;

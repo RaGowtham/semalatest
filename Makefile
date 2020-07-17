@@ -1,15 +1,15 @@
 SEMA_OBJS = $(patsubst %.c,%.o,$(wildcard lib/*.c))
 WDOG_OBJS = $(patsubst %.c,%.o,$(wildcard watchdogtest/*.c))
 APP_OBJS = $(patsubst %.c,%.o,$(wildcard app/*.c))
-obj-m := driver/adl-bmc.o \
+
+obj-m += driver/adl-bmc.o \
 	 driver/adl-bmc-bklight.o \
  	 driver/adl-bmc-wdt.o \
 	 driver/adl-bmc-i2c.o \
  	 driver/adl-bmc-boardinfo.o \
  	 driver/adl-bmc-nvmem.o \
  	 driver/adl-bmc-hwmon.o \
-# 	 driver/adl-bmc-vm.o \
-	 
+ 	 driver/adl-bmc-vm.o 
 
 all: libsema.so semautil wdogtest modules
 

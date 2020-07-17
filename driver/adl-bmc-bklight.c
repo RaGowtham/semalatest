@@ -23,6 +23,7 @@ struct adl_bmc_bklight {
 	int brightness;
 };
 
+static struct adl_bmc_dev *adl_dev;
 static int adl_bmc_update_brightness(struct backlight_device *bl, int brightness)
 {
 	int ret;
@@ -32,7 +33,7 @@ static int adl_bmc_update_brightness(struct backlight_device *bl, int brightness
 
 	buff[0] = brightness;
 
-	ret = adl_bmc_i2c_write_device(NULL, ADL_BMC_CMD_SET_BKLITE, 1,  &buff[0]);
+	ret = adl_bmc_i2c_write_device(adl_dev, ADL_BMC_CMD_SET_BKLITE, 1,  &buff[0]);
 	if (ret < 0) {
 		debug_printk("i2c write error: %d\n", ret);
 		return ret;
@@ -55,7 +56,7 @@ static int adl_bmc_bklight_update_status(struct backlight_device *bl)
 
 	if (Backlight_count == 2) {
 		memset(buff, 0, sizeof(buff));
-		ret = adl_bmc_i2c_read_device(NULL, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
+		ret = adl_bmc_i2c_read_device(adl_dev, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
 		if (ret < 0) {
 			debug_printk("i2c read error: %d\n", ret);
 			return ret;
@@ -101,7 +102,7 @@ static int adl_bmc_bklight_get_brightness(struct backlight_device *bl)
 	unsigned char buff[2];
 	
 	memset(buff, 0, sizeof(buff));
-	ret = adl_bmc_i2c_read_device(NULL, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
+	ret = adl_bmc_i2c_read_device(adl_dev, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
 	if (ret < 0) {
 		debug_printk("i2c read error: %d\n", ret);
 		return ret;
@@ -130,6 +131,7 @@ static int adl_bmc_bklight_probe(struct platform_device *pdev)
 	unsigned char buff[2];
 	int ret;
 
+        adl_dev = dev_get_drvdata(pdev->dev.parent);
 	bklite = devm_kzalloc(&pdev->dev, sizeof(*bklite), GFP_KERNEL);
 	if(!bklite)
 		return -ENOMEM;
@@ -138,9 +140,8 @@ static int adl_bmc_bklight_probe(struct platform_device *pdev)
 	props.type = BACKLIGHT_RAW;
 	props.max_brightness = ADL_BMC_MAX_BRIGHT;
 
-	bl = devm_backlight_device_register(&pdev->dev, pdev->name,
-			pdev->dev.parent, bklite, &adl_bmc_bklight_ops,
-			&props);
+	bl = backlight_device_register(pdev->name, &pdev->dev, bklite,\
+				&adl_bmc_bklight_ops, &props);
 
 	if (IS_ERR(bl)) {
 		dev_err(&pdev->dev, "failed to register backlight device\n");
@@ -149,7 +150,7 @@ static int adl_bmc_bklight_probe(struct platform_device *pdev)
 
 	
 	memset(buff, 0, sizeof(buff));
-	ret = adl_bmc_i2c_read_device(NULL, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
+	ret = adl_bmc_i2c_read_device(adl_dev, ADL_BMC_CMD_GET_BKLITE, 0,  buff);
 	if (ret < 0) {
 		debug_printk("i2c read error: %d\n", ret);
 		return ret;
@@ -168,9 +169,9 @@ static int adl_bmc_bklight_probe(struct platform_device *pdev)
 
 static int adl_bmc_bklight_remove(struct platform_device *pdev)
 {
-	struct backlight_device *bl = platform_get_drvdata(pdev);
-
-        devm_backlight_device_unregister(&pdev->dev, bl);
+        struct backlight_device *bl = platform_get_drvdata(pdev);
+        backlight_device_unregister(bl);
+	kfree(bl);
 	return 0;
 }
 

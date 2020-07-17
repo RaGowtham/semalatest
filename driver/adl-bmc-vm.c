@@ -231,7 +231,7 @@ static int adl_bmc_vm_probe(struct platform_device *pdev)
 
 	for (i = 0; i < vm_data->cnt; i++) 
         {
-		vm_data->adl_bmc_vm_rdev[i] = devm_regulator_register(&pdev->dev, &vm_data->adl_bmc_vm_desc[i], &config);
+		vm_data->adl_bmc_vm_rdev[i] = regulator_register(&pdev->dev, &vm_data->adl_bmc_vm_desc[i], &config);
 		if (IS_ERR(vm_data->adl_bmc_vm_rdev[i])) {
 			ret = PTR_ERR(vm_data->adl_bmc_vm_rdev[i]);
 			pr_err("Failed to register regulator: %d\n", ret);
@@ -246,7 +246,7 @@ static int adl_bmc_vm_probe(struct platform_device *pdev)
 
 ret_failed:
 	for(j = 0; j < i; j++) {
-		devm_regulator_unregister(&pdev->dev, vm_data->adl_bmc_vm_rdev[j]);
+		regulator_unregister(&pdev->dev, vm_data->adl_bmc_vm_rdev[j]);
 		debug_printk("In for loop\n");
 	}
 
@@ -270,7 +270,7 @@ static int adl_bmc_vm_remove(struct platform_device *pdev)
 	kobject_put(kobj_ref);
 	for (i = 0; i < vm_data->cnt; i++) 
 	{
-		devm_regulator_unregister(&pdev->dev, vm_data->adl_bmc_vm_rdev[i]);
+		regulator_unregister(&pdev->dev, vm_data->adl_bmc_vm_rdev[i]);
 	}
 
 	devm_kfree(&pdev->dev, vm_data);

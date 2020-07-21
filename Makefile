@@ -27,7 +27,7 @@ clean: driver_clean app_clean
 install: all driver_install app_install
 
 driver_install:
-	make -C /lib/modules/`uname -r`/build M=`pwd` modules_install
+	make -C /lib/modules/`uname -r`/build M=`pwd` modules_install 2> /dev/null
 	@depmod -a
 
 app_install:

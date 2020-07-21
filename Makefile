@@ -27,14 +27,11 @@ clean: driver_clean app_clean
 install: all driver_install app_install
 
 driver_install:
-	@openssl req -new -nodes -utf8 -sha512 -days 36500 -batch -x509 -config x509.genkey -outform PEM -out signing_key.x509 -keyout signing_key.pem > /dev/null
-	@cp signing_key.pem /lib/modules/`uname -r`/build/certs/
-	@cp signing_key.x509 /lib/modules/`uname -r`/build/certs/
 	make -C /lib/modules/`uname -r`/build M=`pwd` modules_install
 	@depmod -a
 
 app_install:
-	@cp lib/libsema.so /usr/lib
+	@cp lib/libsema.so /usr/lib64
 	@cp wdogtest semautil /usr/bin
 
 driver_clean:
